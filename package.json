@@ -1,0 +1,12 @@
+{
+  "name": "OOTP-Name-Changer",
+  "version": "0.1.0-beta",
+  "description": "A simple app to convert older CSV name files to XML format for OOTP",
+  "main": "main.js",
+  "author": "Eriq P Jaffe",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^26.1.0"
+  },
+  "dependencies": {}
+}

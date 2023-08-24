@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+    <title>OOTP Name Changer</title>
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+	<script type="text/javascript" src="./scripts/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="./scripts/jquery.filepicker.min.js"></script>
+
+    <link href='./scripts/filepicker.default.css' rel='stylesheet' type='text/css'>
+</head>
+<body>
+    <form id="nameForm">
+        <label for="firstNames">First Name:&nbsp;</label><input type="file" id="firstNames" name="First Names" accept=".csv,.txt" />
+    </form>
+<!--     <div style="margin: auto; width: 50%; border: 3px solid green; padding: 10px; text-align:center;">
+        <form id="my-form" action="/target" class="dropzone"></form>
+    </div> -->
+</body>
+<script>
+    require('./renderer.js')
+</script>
+</html>
