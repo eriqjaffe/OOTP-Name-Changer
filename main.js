@@ -9,6 +9,10 @@ ipcMain.on('dropped-file', (event, arg) => {
     //event.returnValue = `Received ${arg.length} paths.`; // Synchronous reply
 })
 
+ipcMain.on('submit-name-files', (event,arg) => {
+    console.log(arg)
+})
+
 const template = [
     ...(isMac ? [{
         label: app.name,

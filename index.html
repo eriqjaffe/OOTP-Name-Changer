@@ -8,6 +8,10 @@
     <script type="text/javascript" src="./scripts/jquery.filepicker.min.js"></script>
 
     <link href='./scripts/filepicker.default.css' rel='stylesheet' type='text/css'>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+    </script>
 </head>
 <body>
     <form id="nameForm">
@@ -24,7 +28,12 @@
 
     $("#nameForm").on("submit", function(e) {
         e.preventDefault()
-        console.log($(this).serialize())
+        let name_obj = {}
+        name_obj.firstName = $("#firstName").files[0].path
+        name_obj.lastName = $("#lastName").val()
+        name_obj.nickName = $("#nickName").val()
+        console.log(name_obj)
+        ipcRenderer.send('submit-name-files', name_obj)
     })
 
 </script>
