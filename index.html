@@ -11,13 +11,21 @@
 </head>
 <body>
     <form id="nameForm">
-        <label for="firstNames">First Name:&nbsp;</label><input type="file" id="firstNames" name="First Names" accept=".csv,.txt" />
+        <input data-label="First Names" id="firstName" class="filepicker" type="file" multiple="" accept=".txt,.csv">
+        <input data-label="Last Names" id="lastName" class="filepicker" type="file" multiple="" accept=".txt,.csv">
+        <input data-label="Nick Names" id="nickName" class="filepicker" type="file" multiple="" accept=".txt,.csv"> 
+        <input type="submit" value="Submit">
     </form>
-<!--     <div style="margin: auto; width: 50%; border: 3px solid green; padding: 10px; text-align:center;">
-        <form id="my-form" action="/target" class="dropzone"></form>
-    </div> -->
 </body>
 <script>
     require('./renderer.js')
+
+    $("input[type='file'].filepicker").filepicker();
+
+    $("#nameForm").on("submit", function(e) {
+        e.preventDefault()
+        console.log($(this).serialize())
+    })
+
 </script>
 </html>
