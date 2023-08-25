@@ -1,0 +1,10 @@
+Buddles,1,0
+Specs,1,0
+Catfish,1,0
+Dad,1,0
+Sal,1,0
+Lew,1,0
+Dude,1,0
+Dilly,1,0
+Nails,1,0
+Moxie,1,0

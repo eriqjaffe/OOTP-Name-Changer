@@ -6,35 +6,80 @@
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 	<script type="text/javascript" src="./scripts/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="./scripts/jquery.filepicker.min.js"></script>
+    <script src="./scripts/jquery.lineProgressbar.js" type="text/javascript"></script>
 
     <link href='./scripts/filepicker.default.css' rel='stylesheet' type='text/css'>
-
+    <link href="./scripts/jquery.lineProgressbar.css" rel="stylesheet" type="text/css" />
     <script>
-        const { ipcRenderer } = require('electron');
+        const { ipcRenderer, dialog } = require('electron');
     </script>
 </head>
 <body>
-    <form id="nameForm">
-        <input data-label="First Names" id="firstName" class="filepicker" type="file" multiple="" accept=".txt,.csv">
-        <input data-label="Last Names" id="lastName" class="filepicker" type="file" multiple="" accept=".txt,.csv">
-        <input data-label="Nick Names" id="nickName" class="filepicker" type="file" multiple="" accept=".txt,.csv"> 
-        <input type="submit" value="Submit">
-    </form>
+    <div style="width:100%; text-align:center;">
+        <input type="button" value="First Names" id="firstName">&nbsp;<span id="firstNameDisplay">first_names.txt</span><br>
+        <input type="button" value="Last Names" id="lastName">&nbsp;<span id="lastNameDisplay">last_names.txt</span><br>
+        <input type="button" value="Nick Names" id="nickName">&nbsp;<span id="nickNameDisplay">nick_names.txt</span><br>
+        <input type="checkbox" id="translate"><label for "translate">Translate Names (WILL SLOW CONVERSION DOWN)</label><br>
+        <input type="button" value="Convert Files" id="convert">
+        <input type="text" id="fnFile" value="./debug/first_names.txt" style="display:none;">
+        <input type="text" id="lnFile" value="./debug/last_names.txt" style="display:none;">
+        <input type="text" id="nnFile" value="./debug/nick_names.txt" style="display:none;">
+    </div>
+    <br>
+    <div id="nameSummary" style="width:100%; border:1px solid blue; text-align: center;">
+        <span id="progressLabel">&nbsp;</span><br>
+        <div id="progressBar"></div>
+        </div>
+</div>
 </body>
 <script>
     require('./renderer.js')
 
-    $("input[type='file'].filepicker").filepicker();
-
-    $("#nameForm").on("submit", function(e) {
+    $("#firstName").on("click", function(e) {
         e.preventDefault()
-        let name_obj = {}
-        name_obj.firstName = $("#firstName").files[0].path
-        name_obj.lastName = $("#lastName").val()
-        name_obj.nickName = $("#nickName").val()
-        console.log(name_obj)
-        ipcRenderer.send('submit-name-files', name_obj)
+        ipcRenderer.send('name-button-click',["firstNameDisplay", "fnFile"])
     })
 
+    $("#lastName").on("click", function(e) {
+        e.preventDefault()
+        ipcRenderer.send('name-button-click',["lastNameDisplay", "lnFile"])
+    })
+
+    $("#nickName").on("click", function(e) {
+        e.preventDefault()
+        ipcRenderer.send('name-button-click',["nickNameDisplay", "nnFile"])
+    })
+
+    $("#convert").on("click", function(e) {
+        let obj = {}
+        obj.firstNames = $("#fnFile").val()
+        obj.lastNames = $("#lnFile").val()
+        obj.nickNames = $("#nnFile").val()
+        obj.translate = $("#translate").is(':checked')
+        ipcRenderer.send('convert-files', JSON.stringify(obj))
+    })
+
+    ipcRenderer.on('file-opened', (event, data) => {
+        let json = JSON.parse(data)
+        if (json.status == "error") {
+            alert(json.message)
+            return false;
+        }
+        if (json.status == "cancelled") {
+            return false;
+        }
+        $("#"+json.element).html(json.fileName)
+        $("#"+json.targetInput).val(json.path)
+    })
+
+    ipcRenderer.on('update-progress', (event, data) => {
+        $("#progressLabel").text("Importing "+data.name+"...")
+
+        $('#progressBar').LineProgressbar({
+            duration: 0,
+            percentage: (data.index/data.total)*100
+        });
+
+    })
 </script>
 </html>
