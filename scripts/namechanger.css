@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+
+* {
+    font-family: 'Montserrat', Helvetica, sans-serif;
+    color: #333447;
+}
+
+.mySpan {
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    background-color:#f9f9f9;
+    border-radius:0px 6px 6px 0px;
+    width: 350px;
+    border:1px solid #dcdcdc;
+    display:inline-block;
+    cursor:pointer;
+    color:#666666;
+    font-size:15px;
+    padding:4px 8px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+    margin-left: -2px;
+}
+
+.myButton {
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    background:linear-gradient(to bottom, #f9f9f9 5%, #e9e9e9 100%);
+    background-color:#f9f9f9;
+    border-radius:6px 0px 0px 6px;
+    width: 110px;
+    border:1px solid #dcdcdc;
+    display:inline-block;
+    cursor:pointer;
+    color:#666666;
+    font-size:15px;
+    font-weight:bold;
+    padding:4px 8px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+}
+.myButton:hover {
+    background:linear-gradient(to bottom, #e9e9e9 5%, #f9f9f9 100%);
+    background-color:#e9e9e9;
+}
+.myButton:active {
+    position:relative;
+    top:1px;
+}
+
+.myButton2 {
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    background:linear-gradient(to bottom, #f9f9f9 5%, #e9e9e9 100%);
+    background-color:#f9f9f9;
+    border-radius:6px;
+    border:1px solid #dcdcdc;
+    display:inline-block;
+    cursor:pointer;
+    color:#666666;
+    font-size:15px;
+    font-weight:bold;
+    padding:4px 8px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+}
+.myButton2:hover {
+    background:linear-gradient(to bottom, #e9e9e9 5%, #f9f9f9 100%);
+    background-color:#e9e9e9;
+}
+.myButton2:active {
+    position:relative;
+    top:1px;
+}
+
+.myButton3 {
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    background:linear-gradient(to bottom, #f9f9f9 5%, #e9e9e9 100%);
+    background-color:#f9f9f9;
+    border-radius:6px 6px 6px 6px;
+    width: 170px;
+    border:1px solid #dcdcdc;
+    display:inline-block;
+    cursor:pointer;
+    color:#666666;
+    font-size:15px;
+    font-weight:bold;
+    padding:4px 8px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+}
+.myButton3:hover {
+    background:linear-gradient(to bottom, #e9e9e9 5%, #f9f9f9 100%);
+    background-color:#e9e9e9;
+}
+.myButton3:active {
+    position:relative;
+    top:1px;
+}
+
+.percentCount {
+    font-family: 'Montserrat', Helvetica, sans-serif!important;
+}
+
+.topDiv {
+    width:767px; 
+    margin: auto; 
+    text-align:center!important;
+    top:0; 
+    position: absolute; 
+    height:225px; 
+    display:none;
+}
+
+.summaryDiv {
+    border: 1px solid blue;
+    height: 71px;
+    width: 100%; 
+    text-align: center;
+    /*display: none;*/
+}
+
+.dropZone {
+    margin: 0 auto;
+    width: 476px;
+    border-radius: 6px;
+}
+
+/* .dropZone:hover {
+    
+-webkit-box-shadow:0px 0px 10px 4px rgba(68,121,227,0.9);
+-moz-box-shadow: 0px 0px 10px 4px rgba(68,121,227,0.9);
+box-shadow: 0px 0px 10px 4px rgba(68,121,227,0.9);
+
+} */

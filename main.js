@@ -4,6 +4,7 @@ const path = require('path')
 const XMLWriter = require('xml-writer');
 const XMLFormatter = require('xml-formatter')
 const { translate } = require('bing-translate-api')
+const xml2js = require('xml2js');
 
 let mainWindow;
 
@@ -13,6 +14,13 @@ const options = {
     properties: ['openFile'],
     filters: [
         { name: 'Name Files', extensions: ['txt', 'csv'] }
+    ]
+}
+
+const saveOptions = {
+    defaultPath: ('names.xml'),
+    filters: [
+        { name: 'XML Files', extensions: ['xml'] }
     ]
 }
 
@@ -53,176 +61,266 @@ ipcMain.on('convert-files', (event, arg) => {
     let count = 1;
     let data, en, kr, jp, cn = null;
     let repl_string = Math.random().toString(36).slice(2)
+    let fnArray = []
+    let lnArray = []
+    let nnArray = []
+    const result = {}
+
     try {
 
         prepareXML()
 
         async function prepareXML() {
-            let fnArray = fs.readFileSync(json.firstNames).toString().split("\n");
-            let lnArray = fs.readFileSync(json.lastNames).toString().split("\n");
-            let nnArray = fs.readFileSync(json.nickNames).toString().split("\n");
+
+            try {
+                fnArray = fs.readFileSync(json.firstNames).toString().split("\n");
+            } catch (err) { 
+                fnArray = [] 
+            }
+
+            try {
+                lnArray = fs.readFileSync(json.lastNames).toString().split("\n");
+            } catch (err) { 
+                lnArray = [] 
+            }
+
+            try {
+                nnArray = fs.readFileSync(json.nickNames).toString().split("\n");
+            } catch (err) { 
+                nnArray = []
+            }
                 
             let total = fnArray.length + lnArray.length + nnArray.length
 
-            let xw = new XMLWriter()
-            xw.startDocument('1.0', 'UTF-8')
-            xw.startElement("NAME_FILE")
-              .writeAttribute("fileversion","OOTP Developments 2023-05-05 13:12:37")
-    
-                // PROCESS FIRST NAMES       
-                if (fnArray.length > 0) {
-                    xw.startElement("FIRST_NAMES")
-                    for (let [i, fn] of fnArray.entries()) {
-                        data = fn.split(",")
-                        event.sender.send('update-progress', { "index": count, "total": total, "name": "First Name: \""+data[0]+"\""})
-                        kr = data[0]
-                        jp = data[0]
-                        cn = data[0]
-                        if (json.translate == true) {
-                            en = await translate(data[0], null, 'ko')
-                            kr = en.translation
+            if (total > 0) {
+                let xw = new XMLWriter()
+                xw.startDocument('1.0', 'UTF-8')
+                xw.startElement("NAME_FILE")
+                .writeAttribute("fileversion","OOTP Developments 2023-05-05 13:12:37")
+        
+                    // PROCESS FIRST NAMES       
+                    if (fnArray.length > 0) {
+                        xw.startElement("FIRST_NAMES")
+                        for (let [i, fn] of fnArray.entries()) {
+                            data = fn.split(",")
+                            event.sender.send('update-progress', { "index": count, "total": total, "name": "First Name: \""+data[0]+"\""})
+                            kr = data[0]
+                            jp = data[0]
+                            cn = data[0]
+                            if (json.translate == true) {
+                                en = await translate(data[0], null, 'ko')
+                                kr = en.translation
 
-                            en = await translate(data[0], null, 'ja')
-                            jp = en.translation
+                                en = await translate(data[0], null, 'ja')
+                                jp = en.translation
 
-                            en = await translate(data[0], null, 'zh-Hans')
-                            cn = en.translation
-                        } 
-                        xw.startElement("N").writeAttribute("nid",count).text(repl_string)
-                            xw.startElement("EN")
-                            .text(data[0].replace(/[\n\r]+/g, ''))
-                            .endElement()
-                            xw.startElement("ES")
-                            .text(data[0])
-                            .endElement()
-                            xw.startElement("KR")
-                            .text(kr)
-                            .endElement()
-                            xw.startElement("JP")
-                            .text(jp)
-                            .endElement()
-                            xw.startElement("CN")
-                            .text(cn)
-                            .endElement()
-                            xw.startElement("NL")
-                                xw.startElement("L")
-                                .writeAttribute("lid",data[1].replace(/[\n\r]+/g, ''))
-                                .writeAttribute("dist",data[2].replace(/[\n\r]+/g, ''))
+                                en = await translate(data[0], null, 'zh-Hans')
+                                cn = en.translation
+                            } 
+                            xw.startElement("N").writeAttribute("nid",count).text(repl_string)
+                                xw.startElement("EN")
+                                .text(data[0].replace(/[\n\r]+/g, ''))
                                 .endElement()
-                            xw.endElement()
-                        xw.endElement()
-                        count++            
-                    }
-                    xw.endElement()
-                }
-    
-                // PROCESS LAST NAMES
-                if (lnArray.length > 0) {
-                    xw.startElement("LAST_NAMES")
-                    for (let [i, ln] of lnArray.entries()) {
-                        data = ln.split(",")
-                        event.sender.send('update-progress', { "index": count, "total": total, "name": "Last Name: \""+data[0]+"\""})
-                        kr = data[0]
-                        jp = data[0]
-                        cn = data[0]
-                        if (json.translate == true) {
-                            en = await translate(data[0], null, 'ko')
-                            kr = en.translation
-
-                            en = await translate(data[0], null, 'ja')
-                            jp = en.translation
-
-                            en = await translate(data[0], null, 'zh-Hans')
-                            cn = en.translation
-                        } 
-                        xw.startElement("N").writeAttribute("nid",count).text(repl_string)
-                            xw.startElement("EN")
-                            .text(data[0].replace(/[\n\r]+/g, ''))
-                            .endElement()
-                            xw.startElement("ES")
-                            .text(data[0])
-                            .endElement()
-                            xw.startElement("KR")
-                            .text(kr)
-                            .endElement()
-                            xw.startElement("JP")
-                            .text(jp)
-                            .endElement()
-                            xw.startElement("CN")
-                            .text(cn)
-                            .endElement()
-                            xw.startElement("NL")
-                                xw.startElement("L")
-                                .writeAttribute("lid",data[1].replace(/[\n\r]+/g, ''))
-                                .writeAttribute("dist",data[2].replace(/[\n\r]+/g, ''))
+                                xw.startElement("ES")
+                                .text(data[0])
                                 .endElement()
-                            xw.endElement()
-                        xw.endElement()
-                        count++
-                    }
-                    xw.endElement()
-                }
-    
-                // PROCESS NICK NAMES
-                if (nnArray.length > 0) {
-                    xw.startElement("NICK_NAMES")
-                    for (let [i, nn] of nnArray.entries()) {
-                        data = nn.split(",")
-                        event.sender.send('update-progress', { "index": count, "total": total, "name": "Nick Name: \""+data[0]+"\""})
-                        kr = data[0]
-                        jp = data[0]
-                        cn = data[0]
-                        if (json.translate == true) {
-                            en = await translate(data[0], null, 'ko')
-                            kr = en.translation
-
-                            en = await translate(data[0], null, 'ja')
-                            jp = en.translation
-
-                            en = await translate(data[0], null, 'zh-Hans')
-                            cn = en.translation
-                        } 
-                        xw.startElement("N").writeAttribute("nid",count).text(repl_string)
-                            xw.startElement("EN")
-                            .text(data[0].replace(/[\n\r]+/g, ''))
-                            .endElement()
-                            xw.startElement("ES")
-                            .text(data[0])
-                            .endElement()
-                            xw.startElement("KR")
-                            .text(kr)
-                            .endElement()
-                            xw.startElement("JP")
-                            .text(jp)
-                            .endElement()
-                            xw.startElement("CN")
-                            .text(cn)
-                            .endElement()
-                            if (data[1] != undefined) {
+                                xw.startElement("KR")
+                                .text(kr)
+                                .endElement()
+                                xw.startElement("JP")
+                                .text(jp)
+                                .endElement()
+                                xw.startElement("CN")
+                                .text(cn)
+                                .endElement()
                                 xw.startElement("NL")
                                     xw.startElement("L")
                                     .writeAttribute("lid",data[1].replace(/[\n\r]+/g, ''))
                                     .writeAttribute("dist",data[2].replace(/[\n\r]+/g, ''))
                                     .endElement()
                                 xw.endElement()
-                            }
-                            
+                            xw.endElement()
+                            count++            
+                        }
                         xw.endElement()
-                        count++
                     }
-                    xw.endElement()
-                }
-    
-            xw.endElement()
-    
-            let formattedXML = XMLFormatter(xw.toString(), { collapseContent: true }).replaceAll(repl_string,"")
-    
-            console.log(formattedXML)
+        
+                    // PROCESS LAST NAMES
+                    if (lnArray.length > 0) {
+                        xw.startElement("LAST_NAMES")
+                        for (let [i, ln] of lnArray.entries()) {
+                            data = ln.split(",")
+                            event.sender.send('update-progress', { "index": count, "total": total, "name": "Last Name: \""+data[0]+"\""})
+                            kr = data[0]
+                            jp = data[0]
+                            cn = data[0]
+                            if (json.translate == true) {
+                                en = await translate(data[0], null, 'ko')
+                                kr = en.translation
+
+                                en = await translate(data[0], null, 'ja')
+                                jp = en.translation
+
+                                en = await translate(data[0], null, 'zh-Hans')
+                                cn = en.translation
+                            } 
+                            xw.startElement("N").writeAttribute("nid",count).text(repl_string)
+                                xw.startElement("EN")
+                                .text(data[0].replace(/[\n\r]+/g, ''))
+                                .endElement()
+                                xw.startElement("ES")
+                                .text(data[0])
+                                .endElement()
+                                xw.startElement("KR")
+                                .text(kr)
+                                .endElement()
+                                xw.startElement("JP")
+                                .text(jp)
+                                .endElement()
+                                xw.startElement("CN")
+                                .text(cn)
+                                .endElement()
+                                xw.startElement("NL")
+                                    xw.startElement("L")
+                                    .writeAttribute("lid",data[1].replace(/[\n\r]+/g, ''))
+                                    .writeAttribute("dist",data[2].replace(/[\n\r]+/g, ''))
+                                    .endElement()
+                                xw.endElement()
+                            xw.endElement()
+                            count++
+                        }
+                        xw.endElement()
+                    }
+        
+                    // PROCESS NICK NAMES
+                    if (nnArray.length > 0) {
+                        xw.startElement("NICK_NAMES")
+                        for (let [i, nn] of nnArray.entries()) {
+                            data = nn.split(",")
+                            event.sender.send('update-progress', { "index": count, "total": total, "name": "Nick Name: \""+data[0]+"\""})
+                            kr = data[0]
+                            jp = data[0]
+                            cn = data[0]
+                            if (json.translate == true) {
+                                en = await translate(data[0], null, 'ko')
+                                kr = en.translation
+
+                                en = await translate(data[0], null, 'ja')
+                                jp = en.translation
+
+                                en = await translate(data[0], null, 'zh-Hans')
+                                cn = en.translation
+                            } 
+                            xw.startElement("N").writeAttribute("nid",count).text(repl_string)
+                                xw.startElement("EN")
+                                .text(data[0].replace(/[\n\r]+/g, ''))
+                                .endElement()
+                                xw.startElement("ES")
+                                .text(data[0])
+                                .endElement()
+                                xw.startElement("KR")
+                                .text(kr)
+                                .endElement()
+                                xw.startElement("JP")
+                                .text(jp)
+                                .endElement()
+                                xw.startElement("CN")
+                                .text(cn)
+                                .endElement()
+                                if (data[1] != undefined) {
+                                    xw.startElement("NL")
+                                        xw.startElement("L")
+                                        .writeAttribute("lid",data[1].replace(/[\n\r]+/g, ''))
+                                        .writeAttribute("dist",data[2].replace(/[\n\r]+/g, ''))
+                                        .endElement()
+                                    xw.endElement()
+                                }
+                                
+                            xw.endElement()
+                            count++
+                        }
+                        xw.endElement()
+                    }
+        
+                xw.endElement()
+        
+                let formattedXML = XMLFormatter(xw.toString(), { collapseContent: true }).replaceAll(repl_string,"")
+        
+                dialog.showSaveDialog(null, saveOptions).then((result) => { 
+                    if (!result.canceled) {
+                        fs.writeFile(result.filePath, formattedXML, (err) => {
+                            if (err) {
+                                result.status = "error"
+                                result.message = err
+                                try {
+                                    event.sender.send('save_xml_result', result)
+                                } catch (err) {
+                                    console.log(err)
+                                }
+                                
+                            } else {
+                                result.status = "success"
+                                result.message = null
+                                try {
+                                    event.sender.send('save_xml_result', result)
+                                } catch (err) {
+                                    console.log(err)
+                                }
+                            }
+                        });
+                    } else {
+                        result.status = "success"
+                        result.message = null
+                        try {
+                            event.sender.send('save_xml_result', result)
+                        } catch (err) {
+                            console.log(err)
+                        }
+                        
+                    }
+                })
+            } else {
+                result.status = "error"
+                result.message = "There were no names found"
+                event.sender.send('save_xml_result', result)
+            }
+
+            
         }
         
     } catch (err) {
 
     }
+})
+
+ipcMain.on('merge-files', (event, arg) => {
+    let json = JSON.parse(arg)
+    let fnArray = []
+    let lnArray = []
+    let nnArray = []
+    const result = {}
+
+    for (file of json) {
+        try {
+            let parser = new xml2js.Parser();
+            let data = fs.readFileSync(file)
+            parser.parseString(data, function(err, result) {
+                for (item of result.NAME_FILE.FIRST_NAMES[0].N) {
+                    fnArray.push(item)
+                }
+                for (item of result.NAME_FILE.LAST_NAMES[0].N) {
+                    lnArray.push(item)
+                }
+                for (item of result.NAME_FILE.NICK_NAMES[0].N) {
+                    nnArray.push(item)
+                }
+            })
+        } catch (err) {}
+        
+    }
+    console.log(fnArray)
+    console.log(lnArray)
+    console.log(nnArray)
 })
 
 const template = [
@@ -244,29 +342,26 @@ const template = [
         label: 'File',
         submenu: [
         {
-            click: () => mainWindow.webContents.send('open-xml','click'),
-            accelerator: isMac ? 'Cmd+O' : 'Control+O',
-            label: 'Open...',
+            click: () => mainWindow.webContents.send('open-first-names','click'),
+            accelerator: isMac ? 'Cmd+Shift+F' : 'Control+Shift+F',
+            label: 'Add First Names',
         },
         {
-            click: () => mainWindow.webContents.send('new-xml','click'),
-            accelerator: isMac ? 'Cmd+N' : 'Control+N',
-            label: 'New...',
+            click: () => mainWindow.webContents.send('open-last-names','click'),
+            accelerator: isMac ? 'Cmd+Shift+L' : 'Control+Shift+L',
+            label: 'Add Last Names',
+        },
+        {
+            click: () => mainWindow.webContents.send('open-nick-names','click'),
+            accelerator: isMac ? 'Cmd+Shift+N' : 'Control+Shift+N',
+            label: 'Add Nick Names',
         },
         { type: 'separator' },
         {
             id: 'saveMenu',
-            click: () => mainWindow.webContents.send('save-xml','click'),
-            accelerator: isMac ? 'Cmd+S' : 'Control+S',
-            label: 'Save',
-            enabled: true
-        },
-        { type: 'separator' },
-        {
-            id: 'closeXMLMenu',
-            click: () => mainWindow.webContents.send('close-xml','click'),
-            accelerator: isMac ? 'Cmd+L' : 'Control+L',
-            label: 'Close File',
+            click: () => mainWindow.webContents.send('convert-files','click'),
+            accelerator: isMac ? 'Cmd+Shift+C' : 'Control+Shift+C',
+            label: 'Convert Files',
             enabled: true
         },
         { type: 'separator' },
@@ -276,6 +371,17 @@ const template = [
     {
         label: 'View',
         submenu: [
+        {
+            click: () => mainWindow.webContents.send('convert-view','click'),
+            accelerator: isMac ? 'Cmd+Shift+1' : 'Control+Shift+1',
+            label: 'Convert Legacy Files',
+        },
+        {
+            click: () => mainWindow.webContents.send('merge-view','click'),
+            accelerator: isMac ? 'Cmd+Shift+2' : 'Control+Shift+2',
+            label: 'Merge XML Files',
+        },
+        { type: 'separator' },
         { role: 'reload' },
         { role: 'forceReload' },
         { role: 'toggleDevTools' },
@@ -290,10 +396,10 @@ const template = [
     {
         label: 'About',
         submenu: [
-        {
+        /* {
             click: () => mainWindow.webContents.send('about','click'),
                 label: 'About the OOTP World Editor',
-        },
+        }, */
         {
             label: 'About OOTP Baseball',
             click: async () => {    
@@ -335,7 +441,7 @@ app.whenReady().then(() => {
 
     mainWindow = new BrowserWindow({
         width: 800,
-        height: 400,
+        height: 380,
         icon: (__dirname + '/images/icon.ico'),
         webPreferences: {
             nodeIntegration: true,
