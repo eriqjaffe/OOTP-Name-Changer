@@ -8,32 +8,68 @@
     <script type="text/javascript" src="./scripts/jquery.filepicker.min.js"></script>
     <script src="./scripts/jquery.lineProgressbar.js" type="text/javascript"></script>
 
+    <link href='./scripts/namechanger.css' rel='stylesheet' type='text/css'>
     <link href='./scripts/filepicker.default.css' rel='stylesheet' type='text/css'>
     <link href="./scripts/jquery.lineProgressbar.css" rel="stylesheet" type="text/css" />
     <script>
         const { ipcRenderer, dialog } = require('electron');
+        let xmlFilesToMerge = []
     </script>
+    <style>
+
+
+    </style>
 </head>
 <body>
-    <div style="width:100%; text-align:center;">
-        <input type="button" value="First Names" id="firstName">&nbsp;<span id="firstNameDisplay">first_names.txt</span><br>
-        <input type="button" value="Last Names" id="lastName">&nbsp;<span id="lastNameDisplay">last_names.txt</span><br>
-        <input type="button" value="Nick Names" id="nickName">&nbsp;<span id="nickNameDisplay">nick_names.txt</span><br>
-        <input type="checkbox" id="translate"><label for "translate">Translate Names (WILL SLOW CONVERSION DOWN)</label><br>
-        <input type="button" value="Convert Files" id="convert">
-        <input type="text" id="fnFile" value="./debug/first_names.txt" style="display:none;">
-        <input type="text" id="lnFile" value="./debug/last_names.txt" style="display:none;">
-        <input type="text" id="nnFile" value="./debug/nick_names.txt" style="display:none;">
+    <div class="topDiv" id="mergeDiv">
+        <table style="height: 225px; width: 100%;">
+            <tr>
+                <td style="width:200px;">
+                    <input type="button" class="myButton3" id="mergeSelect" value="Choose XML Files"><br><br><br>
+                    <input type="button" class="myButton3" id="mergeFiles" value="Merge XML Files">
+                </td>
+                <td>
+                    <select multiple="multiple" id="filesToMerge" style="width:100%; height:100%; overflow-y:auto;">
+                        
+                    </select>
+                </td>
+            </tr>
+        </table>
+
     </div>
-    <br>
-    <div id="nameSummary" style="width:100%; border:1px solid blue; text-align: center;">
+    <div class="topDiv" id="importDiv">
+        <div id="fnDrop" class="dropZone"><input type="button" class="myButton" value="First Names" id="firstName"><span class="mySpan" id="firstNameDisplay">No File Selected</span></div><br>
+        <div id="lnDrop" class="dropZone"><input type="button" class="myButton" value="Last Names" id="lastName"><span class="mySpan" id="lastNameDisplay">No File Selected</span></div><br>
+        <div id="nnDrop" class="dropZone"><input type="button" class="myButton" value="Nick Names" id="nickName"><span class="mySpan" id="nickNameDisplay">No File Selected</span></div><br>
+        <input type="checkbox" id="translate"><label for "translate">Translate Names (This <i>will</i> slow the conversion down)</label><br><br>
+        <input type="button" class="myButton2" value="Convert Files" id="convert">
+        <input type="text" id="fnFile" value="" style="display:none;">
+        <input type="text" id="lnFile" value="" style="display:none;">
+        <input type="text" id="nnFile" value="" style="display:none;">
+    </div>
+    
+    <div id="nameSummary" style="position: absolute; bottom: 10px; width:767px; " class="summaryDiv">
         <span id="progressLabel">&nbsp;</span><br>
         <div id="progressBar"></div>
         </div>
-</div>
+    </div>
+    <div id="importDiv" style="display:none;">
+        
+    </div>
 </body>
 <script>
     require('./renderer.js')
+
+    $(document).ready(function(e) {
+        $("#mergeDiv").css("display","inline-block")
+    })
+
+    document.getElementById("filesToMerge").addEventListener('keydown', function(event) {
+        const key = event.key; // const {key} = event; ES6+
+        if (key === "Backspace" || key === "Delete") {
+            $("#filesToMerge").find('option:selected').remove();
+        }
+    });
 
     $("#firstName").on("click", function(e) {
         e.preventDefault()
@@ -51,6 +87,7 @@
     })
 
     $("#convert").on("click", function(e) {
+        $("#nameSummary").css("display", "inline-block")
         let obj = {}
         obj.firstNames = $("#fnFile").val()
         obj.lastNames = $("#lnFile").val()
@@ -59,7 +96,16 @@
         ipcRenderer.send('convert-files', JSON.stringify(obj))
     })
 
+    $("#mergeFiles").on("click",function(e) {
+        const files = []
+        $("#filesToMerge option").each(function() {
+            files.push($(this).val())
+        })
+        ipcRenderer.send('merge-files', JSON.stringify(files))
+    })
+
     ipcRenderer.on('file-opened', (event, data) => {
+        console.log(data)
         let json = JSON.parse(data)
         if (json.status == "error") {
             alert(json.message)
@@ -81,5 +127,22 @@
         });
 
     })
+
+    ipcRenderer.on('save_xml_result', (event, data) => {
+        $("#nameSummary").css("display", "none")
+        console.log(data.status)
+        if (data.status == "error") (
+            alert("An error occurred:\n\n"+data.message)
+        )
+    })
+
+    function sortDropdown(dropdown) {
+        $(dropdown).html($(dropdown + ' option').sort(function(x, y) {
+            var textX = $(x).text().toLowerCase();
+            var textY = $(y).text().toLowerCase();
+            return textX < textY ? -1 : 1;
+        }));
+        $(dropdown+" :nth-child(1)").prop('selected', true);
+    }
 </script>
 </html>
