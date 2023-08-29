@@ -1,9 +1,14 @@
 {
   "name": "OOTP-Name-Changer",
+  "productName": "OOTP Name Changer",
   "version": "0.1.0-beta",
   "description": "A simple app to convert older CSV name files to XML format for OOTP and/or merge XML files",
   "main": "main.js",
-  "author": "Eriq P Jaffe",
+  "author": {
+    "name": "Eriq Jaffe",
+    "email": "eriqjaffe@gmail.com",
+    "url": "https://github.com/eriqjaffe/OOTP-Name-Changer"
+  },
   "license": "MIT",
   "devDependencies": {
     "electron-builder": "^24.6.3",
