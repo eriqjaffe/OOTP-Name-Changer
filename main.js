@@ -103,7 +103,7 @@ ipcMain.on('convert-files', (event, arg) => {
                         xw.startElement("FIRST_NAMES")
                         for (let [i, fn] of fnArray.entries()) {
                             data = fn.split(",")
-                            event.sender.send('update-progress', { "index": count, "total": total, "name": "First Name: \""+data[0]+"\""})
+                            event.sender.send('update-progress', { "index": count, "total": total, "name": "Importing First Name: \""+data[0]+"\""})
                             kr = data[0]
                             jp = data[0]
                             cn = data[0]
@@ -150,7 +150,7 @@ ipcMain.on('convert-files', (event, arg) => {
                         xw.startElement("LAST_NAMES")
                         for (let [i, ln] of lnArray.entries()) {
                             data = ln.split(",")
-                            event.sender.send('update-progress', { "index": count, "total": total, "name": "Last Name: \""+data[0]+"\""})
+                            event.sender.send('update-progress', { "index": count, "total": total, "name": "Importing Last Name: \""+data[0]+"\""})
                             kr = data[0]
                             jp = data[0]
                             cn = data[0]
@@ -197,7 +197,7 @@ ipcMain.on('convert-files', (event, arg) => {
                         xw.startElement("NICK_NAMES")
                         for (let [i, nn] of nnArray.entries()) {
                             data = nn.split(",")
-                            event.sender.send('update-progress', { "index": count, "total": total, "name": "Nick Name: \""+data[0]+"\""})
+                            event.sender.send('update-progress', { "index": count, "total": total, "name": "Importing Nick Name: \""+data[0]+"\""})
                             kr = data[0]
                             jp = data[0]
                             cn = data[0]
@@ -289,7 +289,9 @@ ipcMain.on('convert-files', (event, arg) => {
         }
         
     } catch (err) {
-
+        result.status = "error"
+        result.message = err.message
+        event.sender.send('save_xml_result', result)
     }
 })
 
@@ -299,9 +301,13 @@ ipcMain.on('merge-files', (event, arg) => {
     let lnArray = []
     let nnArray = []
     const result = {}
+    let fileCount = 1
+    let count = 1
+    let repl_string = Math.random().toString(36).slice(2)
 
     for (file of json) {
         try {
+            event.sender.send('update-progress', { "index": fileCount, "total": json.length, "name": "Reading \""+path.basename(file)+"\""})
             let parser = new xml2js.Parser();
             let data = fs.readFileSync(file)
             parser.parseString(data, function(err, result) {
@@ -315,12 +321,182 @@ ipcMain.on('merge-files', (event, arg) => {
                     nnArray.push(item)
                 }
             })
-        } catch (err) {}
-        
+            fileCount++
+        } catch (err) {
+            result.status = "error"
+            result.message = err.message
+            event.sender.send('save_xml_result', result)
+            return false;
+        }
     }
-    console.log(fnArray)
-    console.log(lnArray)
-    console.log(nnArray)
+
+    let total = fnArray.length + lnArray.length + nnArray.length
+
+    if (total > 0) {
+        let xw = new XMLWriter()
+            xw.startDocument('1.0', 'UTF-8')
+            xw.startElement("NAME_FILE")
+            .writeAttribute("fileversion","OOTP Developments 2023-05-05 13:12:37")
+    
+            // PROCESS FIRST NAMES       
+            if (fnArray.length > 0) {
+                xw.startElement("FIRST_NAMES")
+                for (n of fnArray) {
+                    event.sender.send('update-progress', { "index": count, "total": total, "name": "Merging First Name \""+n.EN[0]+"\""})
+                    xw.startElement("N").writeAttribute("nid",count).text(repl_string)
+                        xw.startElement("EN")
+                        .text(n.EN[0])
+                        .endElement()
+                        xw.startElement("ES")
+                        .text(n.ES[0])
+                        .endElement()
+                        xw.startElement("KR")
+                        .text(n.KR[0])
+                        .endElement()
+                        xw.startElement("JP")
+                        .text(n.JP[0])
+                        .endElement()
+                        xw.startElement("CN")
+                        .text(n.CN[0])
+                        .endElement()
+                        if (n.NL != undefined) {
+                            xw.startElement("NL")
+                            for (l of n.NL) {
+                                for (obj of l.L) {
+                                    xw.startElement("L")
+                                    .writeAttribute("lid",obj.$.lid)
+                                    .writeAttribute("dist",obj.$.dist)
+                                    .endElement() 
+                                }
+                            }
+                            xw.endElement()
+                        }
+                    xw.endElement()
+                    count++
+                }
+                xw.endElement()
+            }
+
+            // PROCESS LAST NAMES
+            if (lnArray.length > 0) {
+                xw.startElement("LAST_NAMES")
+                for (n of lnArray) {
+                    event.sender.send('update-progress', { "index": count, "total": total, "name": "Merging Last Name \""+n.EN[0]+"\""})
+                    xw.startElement("N").writeAttribute("nid",count).text(repl_string)
+                        xw.startElement("EN")
+                        .text(n.EN[0])
+                        .endElement()
+                        xw.startElement("ES")
+                        .text(n.ES[0])
+                        .endElement()
+                        xw.startElement("KR")
+                        .text(n.KR[0])
+                        .endElement()
+                        xw.startElement("JP")
+                        .text(n.JP[0])
+                        .endElement()
+                        xw.startElement("CN")
+                        .text(n.CN[0])
+                        .endElement()
+                        if (n.NL != undefined) {
+                            xw.startElement("NL")
+                            for (l of n.NL) {
+                                for (obj of l.L) {
+                                    xw.startElement("L")
+                                    .writeAttribute("lid",obj.$.lid)
+                                    .writeAttribute("dist",obj.$.dist)
+                                    .endElement() 
+                                }
+                            }
+                            xw.endElement()
+                        }
+                    xw.endElement()
+                    count++
+                }
+                xw.endElement()
+            }
+
+            // PROCESS NICK NAMES
+            if (nnArray.length > 0) {
+                xw.startElement("NICK_NAMES")
+                for (n of nnArray) {
+                    event.sender.send('update-progress', { "index": count, "total": total, "name": "Merging Nick Name \""+n.EN[0]+"\""})
+                    xw.startElement("N").writeAttribute("nid",count).text(repl_string)
+                        xw.startElement("EN")
+                        .text(n.EN[0])
+                        .endElement()
+                        xw.startElement("ES")
+                        .text(n.ES[0])
+                        .endElement()
+                        xw.startElement("KR")
+                        .text(n.KR[0])
+                        .endElement()
+                        xw.startElement("JP")
+                        .text(n.JP[0])
+                        .endElement()
+                        xw.startElement("CN")
+                        .text(n.CN[0])
+                        .endElement()
+                        if (n.NL != undefined) {
+                            xw.startElement("NL")
+                            for (l of n.NL) {
+                                for (obj of l.L) {
+                                    xw.startElement("L")
+                                    .writeAttribute("lid",obj.$.lid)
+                                    .writeAttribute("dist",obj.$.dist)
+                                    .endElement() 
+                                }
+                            }
+                            xw.endElement()
+                        }
+                    xw.endElement()
+                    count++
+                }
+                xw.endElement()
+            }
+
+        xw.endElement()
+
+        let formattedXML = XMLFormatter(xw.toString(), { collapseContent: true }).replaceAll(repl_string,"")
+
+        dialog.showSaveDialog(null, saveOptions).then((result) => { 
+            if (!result.canceled) {
+                fs.writeFile(result.filePath, formattedXML, (err) => {
+                    if (err) {
+                        result.status = "error"
+                        result.message = err
+                        try {
+                            event.sender.send('save_xml_result', result)
+                        } catch (err) {
+                            console.log(err)
+                        }
+                        
+                    } else {
+                        result.status = "success"
+                        result.message = null
+                        try {
+                            event.sender.send('save_xml_result', result)
+                        } catch (err) {
+                            console.log(err)
+                        }
+                    }
+                });
+            } else {
+                result.status = "success"
+                result.message = null
+                try {
+                    event.sender.send('save_xml_result', result)
+                } catch (err) {
+                    console.log(err)
+                }
+                
+            }
+        })
+    } else {
+        result.status = "error"
+        result.message = "There were no names found"
+        event.sender.send('save_xml_result', result)
+    }
 })
 
 const template = [

@@ -30,7 +30,6 @@
                 </td>
                 <td>
                     <select multiple="multiple" id="filesToMerge" style="width:100%; height:100%; overflow-y:auto;">
-                        
                     </select>
                 </td>
             </tr>
@@ -119,7 +118,7 @@
     })
 
     ipcRenderer.on('update-progress', (event, data) => {
-        $("#progressLabel").text("Importing "+data.name+"...")
+        $("#progressLabel").text(data.name+"...")
 
         $('#progressBar').LineProgressbar({
             duration: 0,
