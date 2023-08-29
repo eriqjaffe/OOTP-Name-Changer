@@ -110,11 +110,12 @@
 }
 
 .summaryDiv {
-    border: 1px solid blue;
+    position: absolute; 
+    bottom: 10px;
     height: 71px;
-    width: 100%; 
+    width: 767px; 
     text-align: center;
-    /*display: none;*/
+    display: none;
 }
 
 .dropZone {

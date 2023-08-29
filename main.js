@@ -517,7 +517,7 @@ const template = [
     {
         label: 'File',
         submenu: [
-        {
+        /* {
             click: () => mainWindow.webContents.send('open-first-names','click'),
             accelerator: isMac ? 'Cmd+Shift+F' : 'Control+Shift+F',
             label: 'Add First Names',
@@ -540,7 +540,7 @@ const template = [
             label: 'Convert Files',
             enabled: true
         },
-        { type: 'separator' },
+        { type: 'separator' }, */
         isMac ? { role: 'close' } : { role: 'quit' }
         ]
     },

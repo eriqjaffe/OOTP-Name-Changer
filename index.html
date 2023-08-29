@@ -47,7 +47,7 @@
         <input type="text" id="nnFile" value="" style="display:none;">
     </div>
     
-    <div id="nameSummary" style="position: absolute; bottom: 10px; width:767px; " class="summaryDiv">
+    <div id="nameSummary" style=" " class="summaryDiv">
         <span id="progressLabel">&nbsp;</span><br>
         <div id="progressBar"></div>
         </div>
@@ -60,7 +60,7 @@
     require('./renderer.js')
 
     $(document).ready(function(e) {
-        $("#mergeDiv").css("display","inline-block")
+        $("#importDiv").css("display","inline-block")
     })
 
     document.getElementById("filesToMerge").addEventListener('keydown', function(event) {
