@@ -1,11 +1,12 @@
 {
   "name": "OOTP-Name-Changer",
   "version": "0.1.0-beta",
-  "description": "A simple app to convert older CSV name files to XML format for OOTP",
+  "description": "A simple app to convert older CSV name files to XML format for OOTP and/or merge XML files",
   "main": "main.js",
   "author": "Eriq P Jaffe",
   "license": "MIT",
   "devDependencies": {
+    "electron-builder": "^24.6.3",
     "electron": "^26.1.0"
   },
   "dependencies": {
@@ -13,5 +14,49 @@
     "xml-formatter": "^3.5.0",
     "xml-writer": "^1.7.0",
     "xml2js": "^0.6.2"
+  },
+  "build": {
+    "appId": "com.ootputilities.namechanger",
+    "files": [
+      "**/*",
+      "!debug${/*}"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "zip",
+        "dmg"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "portable": {
+      "artifactName": "${productName}_${version}_portable.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "artifactName": "${productName} ${version} setup.${ext}",
+      "menuCategory": "OOTP Utilities",
+      "shortcutName": "${productName}",
+      "include": "build/installer.nsh",
+      "uninstallDisplayName": "${productName} ${version}",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "rpm",
+        "tar.gz"
+      ]
+    },
+    "deb": {}
   }
 }
