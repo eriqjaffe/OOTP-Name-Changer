@@ -5,6 +5,9 @@ const XMLWriter = require('xml-writer');
 const XMLFormatter = require('xml-formatter')
 const { translate } = require('bing-translate-api')
 const xml2js = require('xml2js');
+const archiver = require('archiver');
+const os = require('os')
+const increment = require('add-filename-increment');
 
 let mainWindow;
 
@@ -17,12 +20,28 @@ const options = {
     ]
 }
 
+const xmlOptions = {
+    properties: ['openFile'],
+    filters: [
+        { name: 'XML Files', extensions: ['xml'] }
+    ]
+}
+
 const saveOptions = {
     defaultPath: ('names.xml'),
     filters: [
         { name: 'XML Files', extensions: ['xml'] }
     ]
 }
+
+const saveZipOptions = {
+    defaultPath: ('names.zip'),
+    filters: [
+        { name: 'ZIP Files', extensions: ['zip']}
+    ]
+}
+
+const tempDir = os.tmpdir()
 
 ipcMain.on('dropped-file', (event, arg) => {
     console.log('Dropped File(s):', arg);
@@ -31,6 +50,33 @@ ipcMain.on('dropped-file', (event, arg) => {
 
 ipcMain.on('name-button-click', (event,arg) => {
     dialog.showOpenDialog(null, options).then(result => {
+        const reply = {}
+        if (!result.canceled) {
+            try {
+                fs.readFile(result.filePaths[0], 'utf8', function(err, data) {
+                    //console.log(path.basename(result.filePaths[0]))
+                    reply.status = "success"
+                    reply.path = result.filePaths[0]
+                    reply.fileName = path.basename(result.filePaths[0])
+                    reply.element = arg[0]
+                    reply.targetInput = arg[1]
+                    event.sender.send('file-opened', JSON.stringify(reply))
+                })
+            } catch (err) {
+                reply.status = "error"
+                reply.message = err
+                event.sender.send('file-opened', JSON.stringify(reply))
+            }
+        } else {
+            reply.status = "cancelled"
+            reply.message = "User cancelled"
+            event.sender.send('file-opened', JSON.stringify(reply))
+        }
+    })
+})
+
+ipcMain.on('xml-button-click', (event,arg) => {
+    dialog.showOpenDialog(null, xmlOptions).then(result => {
         const reply = {}
         if (!result.canceled) {
             try {
@@ -295,6 +341,125 @@ ipcMain.on('convert-files', (event, arg) => {
     }
 })
 
+ipcMain.on('revert-files', (event, arg) => {
+    let fnArray = []
+    let lnArray = []
+    let nnArray = []
+    let json = {}
+
+    try {
+        const output = fs.createWriteStream(tempDir + '/names_temp.zip');
+
+        const archive = archiver('zip', {
+            lib: { level: 9 } // Sets the compression level.
+        });
+            
+        archive.on('error', function(err) {
+            throw err;
+        });
+
+        archive.pipe(output)
+
+        output.on('close', function() {
+            var data = fs.readFileSync(tempDir + '/names_temp.zip');
+            dialog.showSaveDialog(null, saveZipOptions).then((result) => { 
+            if (!result.canceled) {
+                //store.set("downloadPath", path.dirname(result.filePath))
+                fs.writeFile(result.filePath, data, function(err) {
+                if (err) {
+                    fs.unlink(tempDir + '/names_temp.zip', (err) => {
+                    if (err) {
+                        console.log(err)
+                        return
+                    }
+                    })
+                    console.log(err)
+                    json.result = "error"
+                    json.errno = err.errno
+                    event.sender.send('save-zip-response', arg)
+                    //res.json({result: "error", errno: err.errno})
+                } else {
+                    fs.unlink(tempDir + '/names_temp.zip', (err) => {
+                    if (err) {
+                        console.log(err)
+                        return
+                    }
+                    })
+                    json.result = "success"
+                    event.sender.send('revert_xml_result', json)
+                };
+                })
+            } else {
+                fs.unlink(tempDir + '/names_temp.zip', (err) => {
+                if (err) {
+                    console.log(err)
+                    return
+                }
+                })
+                json.result = "success"
+                event.sender.send('revert_xml_result', json)
+            }
+            })
+        });
+
+        let parser = new xml2js.Parser();
+        let data = fs.readFileSync(arg)
+        parser.parseString(data, function(err, result) {
+            if (result.NAME_FILE.FIRST_NAMES != undefined) {
+                for (item of result.NAME_FILE.FIRST_NAMES[0].N) {
+                    let fName = item.EN[0]
+                    let lid = (item.NL != undefined) ? item.NL[0].L[0].$.lid : null
+                    let dist = (item.NL != undefined) ? item.NL[0].L[0].$.dist : null
+                    if (lid == null) {
+                        fnArray.push(fName)
+                    } else {
+                        fnArray.push(fName+","+lid+","+dist)
+                    }
+                }
+            }
+            if (fnArray.length > 0) {
+                archive.append(fnArray.join('\n'), {name: "first_names.txt"})
+            }
+            if (result.NAME_FILE.LAST_NAMES != undefined) {
+                for (item of result.NAME_FILE.LAST_NAMES[0].N) {
+                    let fName = item.EN[0]
+                    let lid = (item.NL != undefined) ? item.NL[0].L[0].$.lid : null
+                    let dist = (item.NL != undefined) ? item.NL[0].L[0].$.dist : null
+                    if (lid == null) {
+                        lnArray.push(fName)
+                    } else {
+                        lnArray.push(fName+","+lid+","+dist)
+                    }
+                }
+            }
+            if (lnArray.length > 0) {
+                archive.append(lnArray.join('\n'), {name: "last_names.txt"})
+            }
+            if (result.NAME_FILE.NICK_NAMES != undefined) {
+                for (item of result.NAME_FILE.NICK_NAMES[0].N) {
+                    let fName = item.EN[0]
+                    let lid = (item.NL != undefined) ? item.NL[0].L[0].$.lid : null
+                    let dist = (item.NL != undefined) ? item.NL[0].L[0].$.dist : null
+                    if (lid == null) {
+                        nnArray.push(fName)
+                    } else {
+                        nnArray.push(fName+","+lid+","+dist)
+                    }
+                }
+            }
+            if (nnArray.length > 0) {
+                archive.append(nnArray.join('\n'), {name: "nick_names.txt"})
+            }
+            archive.finalize()
+        })
+    } catch (err) {
+        json.status = "error"
+        json.message = err.message
+        event.sender.send('revert_xml_result', json)
+        return false;
+    }
+})
+
 ipcMain.on('merge-files', (event, arg) => {
     let json = JSON.parse(arg)
     let fnArray = []
@@ -545,19 +710,28 @@ const template = [
         ]
     },
     {
-        label: 'View',
+        label: 'Action',
         submenu: [
         {
             click: () => mainWindow.webContents.send('convert-view','click'),
             accelerator: isMac ? 'Cmd+Shift+1' : 'Control+Shift+1',
-            label: 'Convert Legacy Files',
+            label: 'Convert Legacy Files To XML',
+        },
+        {
+            click: () => mainWindow.webContents.send('backwards-view','click'),
+            accelerator: isMac ? 'Cmd+Shift+2' : 'Control+Shift+2',
+            label: 'Convert XML to Legacy Format',
         },
         {
             click: () => mainWindow.webContents.send('merge-view','click'),
-            accelerator: isMac ? 'Cmd+Shift+2' : 'Control+Shift+2',
+            accelerator: isMac ? 'Cmd+Shift+3' : 'Control+Shift+3',
             label: 'Merge XML Files',
-        },
-        { type: 'separator' },
+        }
+        ]
+    },
+    {
+        label: 'View',
+        submenu: [
         { role: 'reload' },
         { role: 'forceReload' },
         { role: 'toggleDevTools' },
