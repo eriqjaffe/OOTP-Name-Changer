@@ -710,24 +710,28 @@ const template = [
         ]
     },
     {
-        label: 'View',
+        label: 'Action',
         submenu: [
         {
             click: () => mainWindow.webContents.send('convert-view','click'),
             accelerator: isMac ? 'Cmd+Shift+1' : 'Control+Shift+1',
-            label: 'Convert Legacy Files',
-        },
-        {
-            click: () => mainWindow.webContents.send('merge-view','click'),
-            accelerator: isMac ? 'Cmd+Shift+2' : 'Control+Shift+2',
-            label: 'Merge XML Files',
+            label: 'Convert Legacy Files To XML',
         },
         {
             click: () => mainWindow.webContents.send('backwards-view','click'),
-            accelerator: isMac ? 'Cmd+Shift+3' : 'Control+Shift+3',
+            accelerator: isMac ? 'Cmd+Shift+2' : 'Control+Shift+2',
             label: 'Convert XML to Legacy Format',
         },
-        { type: 'separator' },
+        {
+            click: () => mainWindow.webContents.send('merge-view','click'),
+            accelerator: isMac ? 'Cmd+Shift+3' : 'Control+Shift+3',
+            label: 'Merge XML Files',
+        }
+        ]
+    },
+    {
+        label: 'View',
+        submenu: [
         { role: 'reload' },
         { role: 'forceReload' },
         { role: 'toggleDevTools' },
