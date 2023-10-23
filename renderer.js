@@ -129,11 +129,19 @@ ipcRenderer.on('convert-files', (event, data) => {
 })
 
 ipcRenderer.on('convert-view', (event, data) => {
+    $("#backwardsDiv").css("display","none")
     $("#mergeDiv").css("display","none")
     $("#importDiv").css("display","inline-block")
 })
 
 ipcRenderer.on('merge-view', (event, data) => {
+    $("#backwardsDiv").css("display","none")
     $("#mergeDiv").css("display","inline-block")
+    $("#importDiv").css("display","none")
+})
+
+ipcRenderer.on('backwards-view', (event, data) => {
+    $("#backwardsDiv").css("display","inline-block")
+    $("#mergeDiv").css("display","none")
     $("#importDiv").css("display","none")
 })

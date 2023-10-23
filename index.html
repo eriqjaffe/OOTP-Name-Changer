@@ -46,6 +46,12 @@
         <input type="text" id="lnFile" value="" style="display:none;">
         <input type="text" id="nnFile" value="" style="display:none;">
     </div>
+
+    <div class="topDiv" id="backwardsDiv">
+        <div id="xmlDrop" class="dropZone"><input type="button" class="myButton" value="XML File" id="xmlFile"><span class="mySpan" id="XMLDisplay">No File Selected</span></div><br>
+        <input type="button" class="myButton2" value="Convert File" id="revert">
+        <input type="text" id="xFile" value="" style="display:none;">
+    </div>
     
     <div id="nameSummary" style=" " class="summaryDiv">
         <span id="progressLabel">&nbsp;</span><br>
@@ -85,6 +91,11 @@
         ipcRenderer.send('name-button-click',["nickNameDisplay", "nnFile"])
     })
 
+    $("#xmlFile").on("click", function(e) {
+        e.preventDefault()
+        ipcRenderer.send('xml-button-click',["XMLDisplay", "xFile"])
+    })
+
     $("#convert").on("click", function(e) {
         $("#nameSummary").css("display", "inline-block")
         let obj = {}
@@ -101,6 +112,11 @@
             files.push($(this).val())
         })
         ipcRenderer.send('merge-files', JSON.stringify(files))
+    })
+
+    $("#revert").on("click", function(e) {
+        $("#nameSummary").css("display", "inline-block")
+        ipcRenderer.send('revert-files', $("#xFile").val())
     })
 
     ipcRenderer.on('file-opened', (event, data) => {
@@ -128,6 +144,14 @@
     })
 
     ipcRenderer.on('save_xml_result', (event, data) => {
+        $("#nameSummary").css("display", "none")
+        console.log(data.status)
+        if (data.status == "error") (
+            alert("An error occurred:\n\n"+data.message)
+        )
+    })
+
+    ipcRenderer.on('revert_xml_result', (event, data) => {
         $("#nameSummary").css("display", "none")
         console.log(data.status)
         if (data.status == "error") (
