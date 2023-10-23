@@ -85,6 +85,32 @@ nnDrop.addEventListener('dragleave', (event) => {
 	nnDrop.style["box-shadow"] = "none";
 });
 
+xmlDrop.addEventListener('drop', (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    for (const f of event.dataTransfer.files) {
+		const element = document.getElementById("XMLDisplay")
+        element.innerHTML = path.basename(f.path)
+        const targetInput = document.getElementById("xFile")
+        targetInput.setAttribute("value", f.path);
+        xmlDrop.style["box-shadow"] = "none";
+	}
+
+})
+
+xmlDrop.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+});
+
+xmlDrop.addEventListener('dragenter', (event) => {
+    xmlDrop.style["box-shadow"] = "0px 0px 10px 4px rgba(68,121,227,0.9)";
+});
+
+xmlDrop.addEventListener('dragleave', (event) => {
+	xmlDrop.style["box-shadow"] = "none";
+});
+
 
 filesToMerge.addEventListener('drop', (event) => {
     event.preventDefault()
