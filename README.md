@@ -4,7 +4,7 @@
 
 # OOTP Name Changer
 
-An Electron-based dekstop app allowing users to convert legacy name sets for [Out of the Park Baseball](https://www.ootpdevelopments.com/out-of-the-park-baseball-home) into the XML file the game uses now, as well as the ability to merge multiple XML files into one.  If you don't have OOTP, then this will be of little use to you.
+An Electron-based dekstop app allowing users to convert legacy name sets for [Out of the Park Baseball](https://www.ootpdevelopments.com/out-of-the-park-baseball-home) into the XML file the game uses now, as well as the ability to merge multiple XML files into one.  If you don't have OOTP, then this will be of little use to you.  The app can also take the XML files and convert them backwards into the older legacy format, if you're into that sort of thing.
 
 # Installation notes
 
